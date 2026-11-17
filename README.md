@@ -55,6 +55,27 @@ npm run build
 npm run preview
 ```
 
+## Deployment (GitHub Pages)
+
+The site deploys automatically on every push to `main` via
+[`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml),
+which builds the app and publishes it to GitHub Pages.
+
+Live URL: https://shuash11.github.io/class-schedule-builder/
+
+GitHub Pages serves the app from a repository subpath and cannot rewrite
+deep links, so the app uses hash-based routing (`/#/dashboard`) and relative
+asset paths (`base: './'`).
+
+To connect your Supabase project, add these two repository secrets
+(**Settings → Secrets and variables → Actions**) and re-run the deploy
+workflow — the build injects them at build time:
+
+- `VITE_SUPABASE_URL`
+- `VITE_SUPABASE_PUBLISHABLE_KEY`
+
+Until the secrets exist, the deployed site shows its setup screen.
+
 ## Scripts
 
 | Command | Purpose |
