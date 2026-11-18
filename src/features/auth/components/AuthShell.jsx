@@ -18,8 +18,8 @@ export default function AuthShell({ subtitle, children, footer }) {
         <p className="mt-1 text-center text-sm text-slate-600">{subtitle}</p>
         <div className="mt-4">
           <Alert variant="warning">
-            Demo only — accounts and sessions are stored in Firestore (visible
-            in the Firebase console), but this is not production-grade security.
+            Demo only — accounts and sessions are stored in Firestore and are
+            publicly readable. Use a throwaway password, never a real one.
           </Alert>
         </div>
         <div className="mt-6">{children}</div>

@@ -1,7 +1,7 @@
 /**
- * The browser keeps ONLY a random session token — the account, password hash
- * and session record all live in Firestore (visible in the Firebase console).
- * Storage failures degrade to an in-memory token instead of crashing.
+ * The only persisted LOGIN credential in the browser is this random token —
+ * the account, password hash and session record live in Firestore (visible in
+ * the Firebase console). Storage failures degrade to an in-memory token.
  */
 const STORAGE_KEY = 'class-schedule-builder-session-token'
 let inMemoryToken = null

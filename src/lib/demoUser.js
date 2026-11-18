@@ -1,7 +1,8 @@
 /**
- * Demo mode: this non-production app has an OPTIONAL local sign-in. A stable
- * random ID is generated once in this browser and stored locally so the
- * persisted documents keep the same `user_id` shape as the original design.
+ * Demo mode: this non-production app has OPTIONAL Firestore-backed login. A
+ * stable random ID is generated once in this browser and stored locally so
+ * schedule documents keep the same `user_id` shape as the original design;
+ * it is a data label, independent of the Firestore login account.
  *
  * This ID is only a local label — NOT an authentication identity. Firestore
  * demo rules are intentionally open, so anyone with the public config can

@@ -23,7 +23,6 @@ const registerSchema = z
 
 export default function RegisterPage() {
   const [authError, setAuthError] = useState(null)
-  const [infoMessage, setInfoMessage] = useState(null)
   const {
     register,
     handleSubmit,
@@ -35,16 +34,9 @@ export default function RegisterPage() {
 
   const onSubmit = async (values) => {
     setAuthError(null)
-    setInfoMessage(null)
     try {
-      const { emailConfirmed } = await signUp(values)
-      if (!emailConfirmed) {
-        // Email confirmation is enabled on the project — tell the user.
-        setInfoMessage(
-          `We sent a confirmation link to ${values.email}. Check your inbox, then sign in.`,
-        )
-      }
-      // With a session, the auth state change redirects to /dashboard.
+      await signUp(values)
+      // The auth state change redirects to /dashboard.
     } catch (error) {
       setAuthError(error.message)
     }
@@ -92,11 +84,6 @@ export default function RegisterPage() {
         {authError && (
           <Alert variant="error" role="alert">
             {authError}
-          </Alert>
-        )}
-        {infoMessage && (
-          <Alert variant="info" role="status">
-            {infoMessage}
           </Alert>
         )}
         <Button type="submit" className="mt-2 w-full" loading={isSubmitting}>

@@ -22,10 +22,14 @@ export function AuthProvider({ children }) {
       setStatus(next ? 'authenticated' : 'unauthenticated')
     }
     const unsubscribe = subscribeAuth(apply)
+    // Cross-tab changes to the session token (sign in/out elsewhere).
+    const onStorage = () => resolveSession().then(apply).catch(() => apply(null))
+    if (typeof window !== 'undefined') window.addEventListener('storage', onStorage)
     resolveSession().then(apply).catch(() => apply(null))
     return () => {
       active = false
       unsubscribe()
+      if (typeof window !== 'undefined') window.removeEventListener('storage', onStorage)
     }
   }, [])
 

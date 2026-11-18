@@ -9,7 +9,7 @@ import SubjectsPage from '../features/subjects/pages/SubjectsPage.jsx'
 
 /**
  * Demo mode with OPTIONAL sign-in: the schedule pages are never blocked —
- * Firestore rules are open. /login and /register run a browser-local demo
+ * Firestore rules are open. /login and /register use a Firestore-backed
  * session; an already-signed-in visitor is returned to the dashboard.
  */
 function RequireAnon() {

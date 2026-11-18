@@ -1,15 +1,14 @@
 import {
-  addDoc,
   collection,
   deleteDoc,
   doc,
   getDoc,
   getDocs,
-  limit,
   query,
   serverTimestamp,
   setDoc,
   where,
+  writeBatch,
 } from 'firebase/firestore'
 import { db } from '../../../lib/firebaseClient.js'
 import { createSalt, hashPassword } from '../../../lib/passwordHash.js'
@@ -20,13 +19,13 @@ import {
 } from '../../../lib/sessionToken.js'
 
 /**
- * Firestore-backed demo login — NO Firebase Authentication and NO local
- * account. Users (email + salted hash) and session records live in Firestore,
- * so both are visible in the Firebase console. The browser keeps only a
- * random session token. Demo-grade only: see README security warning.
+ * Firestore-backed demo login — NO Firebase Authentication. Users (email +
+ * salted hash) and session records live in Firestore, visible in the console.
+ * The browser keeps only a random session token. Demo-grade only (open rules).
  */
 const USERS_COLLECTION = 'users'
 const SESSIONS_COLLECTION = 'sessions'
+const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000 // 7 days
 
 export const AUTH_MESSAGES = {
   invalidCredentials: 'Incorrect email or password. Try again.',
@@ -49,23 +48,39 @@ function normalizeEmail(email) {
   return String(email ?? '').trim().toLowerCase()
 }
 
-async function findUserByEmail(email) {
-  const snapshot = await getDocs(
-    query(collection(db, USERS_COLLECTION), where('email', '==', email), limit(1)),
-  )
-  return snapshot.empty ? null : { id: snapshot.docs[0].id, ...snapshot.docs[0].data() }
+function randomToken() {
+  if (globalThis.crypto?.randomUUID) return globalThis.crypto.randomUUID()
+  // CSPRNG fallback for runtimes without randomUUID (never Math.random).
+  const bytes = new Uint8Array(32)
+  globalThis.crypto.getRandomValues(bytes)
+  return Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('')
+}
+
+/** Deterministic doc id (the normalized email) gives stable uniqueness. */
+function userRef(email) {
+  return doc(db, USERS_COLLECTION, email)
 }
 
 async function createSession(userId) {
-  const token = globalThis.crypto.randomUUID?.() ?? `${Date.now()}-${Math.random()}`
+  // Revoke earlier sessions for this user so logins don't accumulate tokens.
+  const previous = await getDocs(
+    query(collection(db, SESSIONS_COLLECTION), where('user_id', '==', userId)),
+  )
+  if (!previous.empty) {
+    const batch = writeBatch(db)
+    previous.docs.forEach((snapshot) => batch.delete(snapshot.ref))
+    await batch.commit()
+  }
+  const token = randomToken()
   await setDoc(doc(db, SESSIONS_COLLECTION, token), {
     user_id: userId,
     created_at: serverTimestamp(),
+    expires_at: Date.now() + SESSION_TTL_MS,
   })
   setSessionToken(token)
 }
 
-/** Resolves the current user from the Firestore session record (called on mount). */
+/** Resolves the session from Firestore on app mount (with expiry check). */
 export async function resolveSession() {
   const token = getSessionToken()
   if (!token) return null
@@ -75,37 +90,44 @@ export async function resolveSession() {
       clearSessionToken()
       return null
     }
-    const user = await getDoc(doc(db, USERS_COLLECTION, session.data().user_id))
+    const expiresAt = session.data().expires_at
+    if (typeof expiresAt === 'number' && Date.now() >= expiresAt) {
+      await deleteDoc(session.ref)
+      clearSessionToken()
+      return null
+    }
+    const user = await getDoc(userRef(session.data().user_id))
     if (!user.exists()) {
       clearSessionToken()
       return null
     }
     return { email: user.data().email }
   } catch {
-    // Offline / backend failure: treat as signed out. Schedule data still
-    // works because the Firestore demo rules are open.
+    // Offline/backend failure: signed out; schedule data still works via open rules.
     return null
   }
 }
 
-/** Registers in Firestore and opens a Firestore-backed session. */
+/** Registers in Firestore and opens a session. */
 export async function signUp({ email, password }) {
   const normalized = normalizeEmail(email)
   try {
-    if (await findUserByEmail(normalized)) {
-      throw new Error(AUTH_MESSAGES.emailInUse)
-    }
+    const ref = userRef(normalized)
+    if ((await getDoc(ref)).exists()) throw new Error(AUTH_MESSAGES.emailInUse)
     const salt = createSalt()
-    const passwordHash = await hashPassword(password, salt)
-    const userRef = await addDoc(collection(db, USERS_COLLECTION), {
+    await setDoc(ref, {
       email: normalized,
       salt,
-      password_hash: passwordHash,
+      password_hash: await hashPassword(password, salt),
       created_at: serverTimestamp(),
     })
-    await createSession(userRef.id)
+    try {
+      await createSession(normalized)
+    } catch (sessionError) {
+      await deleteDoc(ref) // roll back a half-created account
+      throw sessionError
+    }
     notify({ email: normalized })
-    return { emailConfirmed: true }
   } catch (error) {
     if (error.message === AUTH_MESSAGES.emailInUse) throw error
     throw new Error(AUTH_MESSAGES.network)
@@ -116,13 +138,13 @@ export async function signUp({ email, password }) {
 export async function signInWithPassword({ email, password }) {
   const normalized = normalizeEmail(email)
   try {
-    const user = await findUserByEmail(normalized)
-    if (!user) throw new Error(AUTH_MESSAGES.invalidCredentials)
-    const candidateHash = await hashPassword(password, user.salt)
-    if (candidateHash !== user.password_hash) {
+    const user = await getDoc(userRef(normalized))
+    if (!user.exists()) throw new Error(AUTH_MESSAGES.invalidCredentials)
+    const data = user.data()
+    if ((await hashPassword(password, data.salt)) !== data.password_hash) {
       throw new Error(AUTH_MESSAGES.invalidCredentials)
     }
-    await createSession(user.id)
+    await createSession(normalized)
     notify({ email: normalized })
   } catch (error) {
     if (error.message === AUTH_MESSAGES.invalidCredentials) throw error
@@ -130,7 +152,7 @@ export async function signInWithPassword({ email, password }) {
   }
 }
 
-/** Deletes the Firestore session record and clears the local token. */
+/** Deletes the Firestore session and clears the local token. */
 export async function signOut() {
   const token = getSessionToken()
   clearSessionToken()
@@ -139,7 +161,7 @@ export async function signOut() {
   try {
     await deleteDoc(doc(db, SESSIONS_COLLECTION, token))
   } catch {
-    // Local sign-out already succeeded; the orphan session record is harmless.
+    // Local sign-out already succeeded; an orphan record will expire.
   }
 }
 

@@ -7,7 +7,8 @@ Built with **React + Vite + Tailwind CSS**, backed by **Firebase Cloud
 Firestore**. This is a **non-production demo**: the Firestore rules are
 intentionally open. Login/register use **Firestore documents** (`users` and
 `sessions`) instead of Firebase Auth — accounts and sessions are visible in
-the Firebase console. Only a random session token is kept in the browser.
+the Firebase console. The only persisted login credential in the browser is a
+random session token (a separate local demo id labels schedule documents).
 
 ## Features
 

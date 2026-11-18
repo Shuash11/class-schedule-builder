@@ -96,7 +96,7 @@ Stored in `subjects.color` as the **500-level hex** below. Screen rendering uses
   - Right: user email `text-xs text-slate-500 truncate max-w-48` (≥`lg` only) + sign-out icon button (LogOut, `aria-label="Sign out"`).
 - **Mobile bottom tab bar** (`md:hidden`, `no-print`): `fixed inset-x-0 bottom-0 z-30 grid grid-cols-3 border-t border-slate-200 bg-white pb-[env(safe-area-inset-bottom)]`; items = icon (h-5) + `text-xs` label, active `text-indigo-700` (+ `bg-indigo-50` pill), inactive `text-slate-600`. Targets ≥44px tall (`py-2.5`).
 - **Main:** `<main class="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-6 sm:py-8 pb-24 md:pb-8">` (extra bottom padding clears the tab bar). Each page has exactly one `h1`.
-- **Auth redirect behavior (demo mode):** schedule pages are always reachable; local sign-in → `/dashboard`; local sign-out keeps you on the current page; visiting `/login`/`/register` while signed in → `/dashboard`. No server auth or 401 handling exists.
+- **Auth redirect behavior (demo mode):** schedule pages are always reachable; Firestore-backed sign-in → `/dashboard`; sign-out keeps you on the current page; visiting `/login`/`/register` while signed in → `/dashboard`. No Firebase Auth or 401 handling exists.
 
 ## 5. Shared components & states (build once in `src/components/ui/`)
 
