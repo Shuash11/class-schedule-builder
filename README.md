@@ -85,9 +85,9 @@ Then prepare the Firebase project (no Authentication setup is needed):
 - **Subject deletion is atomic up to 500 sessions.** The subject and its
   sessions are deleted in a single Firestore batch; a subject with more than
   500 sessions would exceed the batch limit.
-- **Firestore has no database-level cascade when a Firebase Auth account is
-  deleted** outside the app. Deleting an Auth user in the console leaves its
-  Firestore documents behind; remove those manually if you delete accounts.
+- **Demo data lives in the shared Firestore project until deleted through the
+  app.** Clearing this browser's demo ID only hides it from this browser — it
+  does not delete the underlying public documents.
 
 ## Production build
 

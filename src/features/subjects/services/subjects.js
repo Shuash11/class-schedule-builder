@@ -65,8 +65,7 @@ export async function createSubject(values) {
     throw Object.assign(new Error('duplicate subject code'), { code: '23505' })
   }
 
-  // Security rules enforce ownership server-side; user_id is still set
-  // explicitly from the current session on every write (architecture contract).
+  // Demo mode: user_id is a local label (not an identity) on every write.
   const payload = {
     user_id: userId,
     subject_code: values.subject_code,

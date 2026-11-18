@@ -1,3 +1,4 @@
+import Alert from '../../../components/ui/Alert.jsx'
 import Logo from '../../../components/ui/Logo.jsx'
 
 /**
@@ -15,6 +16,11 @@ export default function AuthShell({ subtitle, children, footer }) {
           Class Schedule Builder
         </h1>
         <p className="mt-1 text-center text-sm text-slate-600">{subtitle}</p>
+        <div className="mt-4">
+          <Alert variant="warning">
+            Demo only — no real account or password check. Schedule data is public.
+          </Alert>
+        </div>
         <div className="mt-6">{children}</div>
         {footer && <div className="mt-6 text-center text-sm text-slate-600">{footer}</div>}
       </div>

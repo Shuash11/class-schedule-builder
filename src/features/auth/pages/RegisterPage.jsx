@@ -77,7 +77,7 @@ export default function RegisterPage() {
         <PasswordInput
           id="password"
           label="Password"
-          autoComplete="new-password"
+          autoComplete="off"
           helper="Use at least 8 characters."
           error={errors.password?.message}
           {...register('password')}
@@ -85,7 +85,7 @@ export default function RegisterPage() {
         <PasswordInput
           id="confirmPassword"
           label="Confirm password"
-          autoComplete="new-password"
+          autoComplete="off"
           error={errors.confirmPassword?.message}
           {...register('confirmPassword')}
         />

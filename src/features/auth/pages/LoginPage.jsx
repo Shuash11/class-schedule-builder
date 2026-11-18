@@ -63,7 +63,7 @@ export default function LoginPage() {
         <PasswordInput
           id="password"
           label="Password"
-          autoComplete="current-password"
+          autoComplete="off"
           error={errors.password?.message}
           {...register('password')}
         />

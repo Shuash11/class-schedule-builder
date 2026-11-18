@@ -16,9 +16,9 @@
 
 ## 1. Product context & design direction
 
-- **Users:** one role — a signed-in student managing a recurring weekly class timetable. High-frequency tasks: add/edit sessions, scan the week, print. Entry: `/login` → `/dashboard`; exit: sign out.
+- **Users (demo mode):** one role — a student managing a recurring weekly class timetable. Sign-in is optional and local-only; entry is `/dashboard`, with `/login` → `/dashboard` available for the demo journey. High-frequency tasks: add/edit sessions, scan the week, print.
 - **Direction (decision):** calm, functional productivity tool. Light theme only (no dark mode in v1). Near-white cool-neutral `slate` chrome, white surfaces, **indigo primary** — deliberately derived from the existing DB default `#6366F1` (indigo family), so the brand hue and the default subject color agree. No gradients, no glassmorphism, minimal shadows (borders carry structure). Color in the UI is information (subject identity, status), not decoration.
-- **IA:** 5 routes — `/login`, `/register` (public), `/dashboard`, `/subjects`, `/schedule` (protected; redirect to `/login` when unauthenticated; `/` redirects to `/dashboard` or `/login`). Top nav on ≥`md`, bottom tab bar below `md`.
+- **IA (demo mode):** `/login`, `/register` (optional local demo sign-in); `/dashboard`, `/subjects`, `/schedule` (always open — no auth guard); `/` redirects to `/dashboard`. Top nav on ≥`md`, bottom tab bar below `md`.
 
 ## 2. Design tokens
 
@@ -96,7 +96,7 @@ Stored in `subjects.color` as the **500-level hex** below. Screen rendering uses
   - Right: user email `text-xs text-slate-500 truncate max-w-48` (≥`lg` only) + sign-out icon button (LogOut, `aria-label="Sign out"`).
 - **Mobile bottom tab bar** (`md:hidden`, `no-print`): `fixed inset-x-0 bottom-0 z-30 grid grid-cols-3 border-t border-slate-200 bg-white pb-[env(safe-area-inset-bottom)]`; items = icon (h-5) + `text-xs` label, active `text-indigo-700` (+ `bg-indigo-50` pill), inactive `text-slate-600`. Targets ≥44px tall (`py-2.5`).
 - **Main:** `<main class="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-6 sm:py-8 pb-24 md:pb-8">` (extra bottom padding clears the tab bar). Each page has exactly one `h1`.
-- **Auth redirect behavior:** unauthenticated → `/login`; after sign-in → `/dashboard`; after sign-out → `/login`; visiting `/login`/`/register` while authenticated → `/dashboard`. Auth/network 401 during use → redirect to `/login`.
+- **Auth redirect behavior (demo mode):** schedule pages are always reachable; local sign-in → `/dashboard`; local sign-out keeps you on the current page; visiting `/login`/`/register` while signed in → `/dashboard`. No server auth or 401 handling exists.
 
 ## 5. Shared components & states (build once in `src/components/ui/`)
 

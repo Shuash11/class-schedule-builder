@@ -48,9 +48,8 @@ export async function createSession(values) {
   assertOnline()
   const userId = await getDemoUserId()
 
-  // Security rules verify the referenced subject belongs to this user;
-  // user_id is still set explicitly from the current session on every write
-  // (architecture contract). subject_id is the subject document id (string).
+  // Demo mode: user_id is a local label; subject_id is the subject document
+  // id (string). Firestore rules are open and do not verify ownership.
   const payload = {
     user_id: userId,
     subject_id: values.subject_id,

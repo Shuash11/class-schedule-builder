@@ -9,9 +9,8 @@ import SubjectsPage from '../features/subjects/pages/SubjectsPage.jsx'
 
 /**
  * Demo mode with OPTIONAL sign-in: the schedule pages are never blocked —
- * Firestore rules are open. /login and /register are available for users who
- * want to sign in once the Email/Password provider is enabled in the Firebase
- * console; an already-signed-in visitor is returned to the dashboard.
+ * Firestore rules are open. /login and /register run a browser-local demo
+ * session; an already-signed-in visitor is returned to the dashboard.
  */
 function RequireAnon() {
   const { status } = useAuth()

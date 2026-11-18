@@ -2,10 +2,10 @@ import { doc, getDoc } from 'firebase/firestore'
 import { db } from './firebaseClient.js'
 
 /**
- * Reads a document and verifies it belongs to the signed-in user, mirroring
- * the old query-level `.eq('user_id', ...)` guard (defense in depth — the
- * Firestore security rules are the primary guard, this keeps the service
- * contract identical if rules ever drift).
+ * Reads a document and verifies its `user_id` matches the local demo label.
+ * Demo mode has no server-side ownership guard (Firestore rules are open);
+ * this check only prevents the UI from acting on a document labeled for a
+ * different local id.
  *
  * A missing or non-owned document fails with a neutral error code — it is a
  * stale-data condition (e.g. deleted in another tab), so the UI shows its
