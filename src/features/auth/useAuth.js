@@ -1,8 +1,8 @@
 import { createContext, useContext } from 'react'
 
 /**
- * Auth context (architecture contract): wraps supabase.auth.getSession() and
- * onAuthStateChange. No custom persistence — the Supabase client owns it.
+ * Auth context (architecture contract): wraps Firebase Auth's
+ * onAuthStateChanged. No custom persistence — Firebase Auth owns it.
  *
  * status: 'loading' | 'authenticated' | 'unauthenticated'
  */

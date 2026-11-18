@@ -1,0 +1,60 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
+    // Guide §8 format rules, enforced server-side as well as by zod in the UI.
+    function validTime(t) {
+      return t is string && t.matches('^([01][0-9]|2[0-3]):[0-5][0-9]$');
+    }
+
+    function validSubjectData(d) {
+      return isOwner(d.user_id)
+        && d.subject_code is string && d.subject_code.size() >= 1 && d.subject_code.size() <= 20
+        && d.subject_name is string && d.subject_name.size() >= 1 && d.subject_name.size() <= 80
+        && (d.instructor == null || (d.instructor is string && d.instructor.size() <= 80))
+        && (d.room == null || (d.room is string && d.room.size() <= 40))
+        && d.color in ['#615fff', '#8e51ff', '#00a6f4', '#00bba7', '#00bc7d',
+                       '#fe9a00', '#ff6900', '#ff2056', '#6366f1'];
+    }
+
+    function validSessionData(d) {
+      return isOwner(d.user_id)
+        && d.subject_id is string
+        && d.day_of_week is int && d.day_of_week >= 0 && d.day_of_week <= 6
+        && validTime(d.start_time) && validTime(d.end_time)
+        && d.start_time < d.end_time;
+    }
+
+    function ownsSubject(subjectId) {
+      return get(/databases/$(database)/documents/subjects/$(subjectId)).data.user_id == request.auth.uid;
+    }
+
+    match /subjects/{subjectId} {
+      allow read, delete: if isOwner(resource.data.user_id);
+      allow create: if validSubjectData(request.resource.data);
+      // Old and new owner must be the caller, and created_at is immutable
+      // (the old SQL RLS WITH CHECK enforced owner immutability on updates).
+      allow update: if isOwner(resource.data.user_id)
+        && validSubjectData(request.resource.data)
+        && request.resource.data.user_id == resource.data.user_id
+        && request.resource.data.created_at == resource.data.created_at;
+    }
+
+    match /class_sessions/{sessionId} {
+      allow read, delete: if isOwner(resource.data.user_id);
+      // Equivalent of the old SQL EXISTS check on the subject's owner.
+      allow create: if validSessionData(request.resource.data)
+        && ownsSubject(request.resource.data.subject_id);
+      // F-01 fix: the requested user_id must stay the caller's — a session
+      // cannot be transferred into another account (7/8 → 8/8 alignment).
+      allow update: if isOwner(resource.data.user_id)
+        && validSessionData(request.resource.data)
+        && request.resource.data.user_id == resource.data.user_id
+        && request.resource.data.created_at == resource.data.created_at
+        && ownsSubject(request.resource.data.subject_id);
+    }
+  }
+}

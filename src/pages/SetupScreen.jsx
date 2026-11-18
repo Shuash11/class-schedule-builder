@@ -1,7 +1,7 @@
 import Logo from '../components/ui/Logo.jsx'
 
 /**
- * Full-screen setup card shown instead of the app when the Supabase
+ * Full-screen setup card shown instead of the app when the Firebase
  * environment variables are missing. No router, no crash.
  */
 export default function SetupScreen() {
@@ -12,24 +12,34 @@ export default function SetupScreen() {
           <Logo size="lg" />
         </div>
         <h1 className="mt-3 text-center text-xl font-semibold text-slate-900">
-          Set up Supabase to continue
+          Set up Firebase to continue
         </h1>
         <p className="mt-1 text-center text-sm text-slate-600">
-          This app needs your Supabase project details before it can run.
+          This app needs your Firebase project details before it can run.
         </p>
         <div className="mt-6 space-y-4 text-sm text-slate-600">
           <p>
-            Add these two variables to a <code className="text-slate-900">.env.local</code> file in
+            Add these variables to a <code className="text-slate-900">.env.local</code> file in
             the project root, then restart the dev server:
           </p>
           <pre className="overflow-x-auto rounded-lg border border-slate-200 bg-slate-50 p-3 text-xs text-slate-700">
-            VITE_SUPABASE_URL=&lt;your Supabase project URL&gt;
+            VITE_FIREBASE_API_KEY=&lt;your web app API key&gt;
             {'\n'}
-            VITE_SUPABASE_PUBLISHABLE_KEY=&lt;your publishable key&gt;
+            VITE_FIREBASE_AUTH_DOMAIN=&lt;your auth domain&gt;
+            {'\n'}
+            VITE_FIREBASE_PROJECT_ID=&lt;your project id&gt;
+            {'\n'}
+            VITE_FIREBASE_STORAGE_BUCKET=&lt;your storage bucket&gt;
+            {'\n'}
+            VITE_FIREBASE_MESSAGING_SENDER_ID=&lt;your sender id&gt;
+            {'\n'}
+            VITE_FIREBASE_APP_ID=&lt;your app id&gt;
           </pre>
           <p>
-            Step-by-step instructions are in <code className="text-slate-900">README.md</code> at
-            the project root.
+            Copy the values from the Firebase console: <strong>Project settings → General →
+            Your apps → SDK setup and configuration</strong> (web app). Step-by-step
+            instructions are in <code className="text-slate-900">README.md</code> at the project
+            root.
           </p>
         </div>
       </div>

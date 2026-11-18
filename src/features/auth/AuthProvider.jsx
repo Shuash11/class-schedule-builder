@@ -1,66 +1,50 @@
 import { useEffect, useMemo, useState } from 'react'
-import { supabase } from '../../lib/supabaseClient.js'
+import { onAuthStateChanged, signOut } from 'firebase/auth'
+import { auth } from '../../lib/firebaseClient.js'
 import { AuthContext } from './useAuth.js'
 
 /**
- * Provides the current Supabase session to the app and keeps it in sync via
- * onAuthStateChange (covers sign-in, sign-out and expired tokens, which
- * redirects protected routes to /login).
+ * Provides the current Firebase Auth user to the app and keeps it in sync via
+ * onAuthStateChanged. Firebase fires the listener immediately with the
+ * existing session, so it covers both the initial lookup and every later
+ * change (sign-in, sign-out) — protected routes redirect accordingly.
  */
 export function AuthProvider({ children }) {
-  const [session, setSession] = useState(null)
+  const [user, setUser] = useState(null)
   const [status, setStatus] = useState('loading')
 
   useEffect(() => {
-    let active = true
+    const unsubscribe = onAuthStateChanged(
+      auth,
+      (nextUser) => {
+        setUser(nextUser)
+        setStatus(nextUser ? 'authenticated' : 'unauthenticated')
+      },
+      () => {
+        // A failed auth-state lookup is handled as signed-out (safe default):
+        // protected routes redirect to /login where the user can retry.
+        setUser(null)
+        setStatus('unauthenticated')
+      },
+    )
 
-    const applySession = (nextSession) => {
-      setSession(nextSession ?? null)
-      setStatus(nextSession ? 'authenticated' : 'unauthenticated')
-    }
-
-    supabase.auth
-      .getSession()
-      .then(({ data, error }) => {
-        if (!active) return
-        if (error) {
-          // A failed session lookup is handled as signed-out (safe default):
-          // protected routes redirect to /login where the user can retry.
-          applySession(null)
-          return
-        }
-        applySession(data.session)
-      })
-      .catch(() => {
-        if (active) applySession(null)
-      })
-
-    const { data: subscription } = supabase.auth.onAuthStateChange((_event, nextSession) => {
-      applySession(nextSession)
-    })
-
-    return () => {
-      active = false
-      subscription.subscription.unsubscribe()
-    }
+    return unsubscribe
   }, [])
 
   const value = useMemo(
     () => ({
-      session,
-      user: session?.user ?? null,
+      user,
       status,
       /**
-       * Signs this browser out. `local` scope removes the stored session even
-       * when the server-side revocation call fails (security review M-01);
-       * the error is surfaced to the caller so a failed sign-out is visible.
+       * Signs this browser out. Firebase Auth removes its own stored session,
+       * and the error is surfaced to the caller so a failed sign-out is
+       * visible (AppLayout shows an alert).
        */
       signOut: async () => {
-        const { error } = await supabase.auth.signOut({ scope: 'local' })
-        if (error) throw error
+        await signOut(auth)
       },
     }),
-    [session, status],
+    [user, status],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
