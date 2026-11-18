@@ -10,6 +10,10 @@ export const AUTH_MESSAGES = {
   invalidCredentials: 'Incorrect email or password. Try again.',
   emailInUse: 'An account with this email already exists. Try signing in.',
   tooManyAttempts: 'Too many attempts. Try again in a few minutes.',
+  // Lead-approved Firebase-specific diagnostic: a CLI-created project has no
+  // Auth config until Email/Password is enabled in the Firebase console.
+  notConfigured:
+    'Sign-in is not set up yet. Ask the site owner to enable Email/Password sign-in.',
   network: "Couldn't sign in. Check your connection and try again.",
 }
 
@@ -26,6 +30,16 @@ const EMAIL_IN_USE_CODES = new Set(['auth/email-already-in-use', 'auth/email-exi
 
 const TOO_MANY_ATTEMPTS_CODE = 'auth/too-many-requests'
 
+// Auth provider/config not ready (not a network failure): Email/Password can
+// be disabled, the Auth config uninitialized, or the domain not allowlisted.
+const NOT_CONFIGURED_CODES = new Set([
+  'auth/operation-not-allowed',
+  'auth/configuration-not-found',
+  'auth/invalid-api-key',
+  'auth/app-not-authorized',
+  'auth/unauthorized-domain',
+])
+
 export function mapAuthError(error) {
   if (!error) return AUTH_MESSAGES.network
 
@@ -36,6 +50,12 @@ export function mapAuthError(error) {
   if (INVALID_CREDENTIAL_CODES.has(code)) return AUTH_MESSAGES.invalidCredentials
   if (EMAIL_IN_USE_CODES.has(code)) return AUTH_MESSAGES.emailInUse
   if (code === TOO_MANY_ATTEMPTS_CODE) return AUTH_MESSAGES.tooManyAttempts
+  if (
+    NOT_CONFIGURED_CODES.has(code) ||
+    /CONFIGURATION_NOT_FOUND|OPERATION_NOT_ALLOWED|unauthorized-domain/i.test(message)
+  ) {
+    return AUTH_MESSAGES.notConfigured
+  }
 
   const isNetworkFailure =
     error instanceof TypeError ||
