@@ -1,10 +1,10 @@
 import { createContext, useContext } from 'react'
 
 /**
- * Auth context (architecture contract): wraps Firebase Auth's
- * onAuthStateChanged. No custom persistence — Firebase Auth owns it.
+ * Auth context (demo mode): wraps the browser-local demo session provided
+ * by AuthProvider / demoSession.js. No Firebase Auth or server persistence.
  *
- * status: 'loading' | 'authenticated' | 'unauthenticated'
+ * status: 'authenticated' | 'unauthenticated'
  */
 export const AuthContext = createContext(null)
 

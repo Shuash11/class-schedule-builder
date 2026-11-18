@@ -1,20 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { fetchSessions } from '../features/schedule/services/sessions.js'
 import { fetchSubjects } from '../features/subjects/services/subjects.js'
-import { useAuth } from '../features/auth/useAuth.js'
-import { clearLocalSession, isSessionInvalidError } from '../features/auth/services/auth.js'
 
 /**
- * Loads the signed-in user's subjects and sessions together — the dataset
- * shared by the Dashboard, Subjects and Schedule pages. RLS scopes every
- * query server-side; the client only ever reads its own rows.
- *
- * Concurrent loads are guarded by a request sequence: only the newest
- * request may commit state, so a slow stale response can never overwrite
- * fresher data (code review finding 2).
+ * Demo mode (no sign-in): loads subjects and sessions together — the dataset
+ * shared by the Dashboard, Subjects and Schedule pages. Firestore demo rules
+ * permit access to the shared data; the local demo id is only a label in the
+ * documents. Concurrent loads are guarded by a request sequence so a slow
+ * stale response can never overwrite fresher data.
  */
 export function useUserData() {
-  const { status } = useAuth()
   const [subjects, setSubjects] = useState([])
   const [sessions, setSessions] = useState([])
   const [loading, setLoading] = useState(true)
@@ -32,12 +27,6 @@ export function useUserData() {
       })
       .catch((loadError) => {
         if (sequence !== loadSequenceRef.current) return
-        if (isSessionInvalidError(loadError)) {
-          // Invalid/expired token (design-spec §4): drop the local session so
-          // the auth listener flips to unauthenticated and routes redirect.
-          clearLocalSession().catch(() => {})
-          return
-        }
         setError(loadError)
       })
       .finally(() => {
@@ -46,10 +35,8 @@ export function useUserData() {
   }, [])
 
   useEffect(() => {
-    if (status === 'authenticated') {
-      load()
-    }
-  }, [status, load])
+    load()
+  }, [load])
 
   // Event-handler variant (Retry): shows the loading state again.
   const reload = useCallback(() => {

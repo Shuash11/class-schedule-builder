@@ -7,10 +7,9 @@ import { db } from './firebaseClient.js'
  * Firestore security rules are the primary guard, this keeps the service
  * contract identical if rules ever drift).
  *
- * A missing or non-owned document fails with a NEUTRAL error code — it is a
- * stale-data condition (e.g. deleted in another tab), NOT an authentication
- * failure, so the UI shows its normal error instead of signing the user out
- * (see isSessionInvalidError).
+ * A missing or non-owned document fails with a neutral error code — it is a
+ * stale-data condition (e.g. deleted in another tab), so the UI shows its
+ * normal error instead of hiding it.
  */
 export async function getOwnedDoc(collectionName, id, userId) {
   const snapshot = await getDoc(doc(db, collectionName, id))

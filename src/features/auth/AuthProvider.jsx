@@ -1,50 +1,30 @@
 import { useEffect, useMemo, useState } from 'react'
-import { onAuthStateChanged, signOut } from 'firebase/auth'
-import { auth } from '../../lib/firebaseClient.js'
+import {
+  getDemoSession,
+  subscribeDemoSession,
+} from '../../lib/demoSession.js'
+import { signOut as demoSignOut } from './services/auth.js'
 import { AuthContext } from './useAuth.js'
 
 /**
- * Provides the current Firebase Auth user to the app and keeps it in sync via
- * onAuthStateChanged. Firebase fires the listener immediately with the
- * existing session, so it covers both the initial lookup and every later
- * change (sign-in, sign-out) — protected routes redirect accordingly.
+ * Demo-mode auth provider (NON-PRODUCTION): exposes a browser-local session
+ * to the existing UI. No Firebase Auth/network calls — Firestore demo rules
+ * are open, so every route stays usable with or without signing in.
  */
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null)
-  const [status, setStatus] = useState('loading')
+  const [session, setSession] = useState(() => getDemoSession())
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(
-      auth,
-      (nextUser) => {
-        setUser(nextUser)
-        setStatus(nextUser ? 'authenticated' : 'unauthenticated')
-      },
-      () => {
-        // A failed auth-state lookup is handled as signed-out (safe default):
-        // protected routes redirect to /login where the user can retry.
-        setUser(null)
-        setStatus('unauthenticated')
-      },
-    )
-
-    return unsubscribe
-  }, [])
+  useEffect(() => subscribeDemoSession(setSession), [])
 
   const value = useMemo(
     () => ({
-      user,
-      status,
-      /**
-       * Signs this browser out. Firebase Auth removes its own stored session,
-       * and the error is surfaced to the caller so a failed sign-out is
-       * visible (AppLayout shows an alert).
-       */
+      user: session ? { email: session.email } : null,
+      status: session ? 'authenticated' : 'unauthenticated',
       signOut: async () => {
-        await signOut(auth)
+        await demoSignOut()
       },
     }),
-    [user, status],
+    [session],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

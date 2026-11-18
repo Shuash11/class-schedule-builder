@@ -1,5 +1,15 @@
 # Class Schedule Builder — UX/UI Design Specification
 
+> **Demo-mode amendment (18 Nov 2026, owner decision):** sign-in/register are
+> **optional** in this non-production app — the pages exist, the header offers
+> Sign in / Sign out, but no route is protected and the Firestore rules are
+> intentionally open (data works without signing in). Sign-in is a **local
+> demo session** in `localStorage` — no Firebase Auth, no account, no password
+> check, no console Auth setup. §4's *mandatory* auth redirects do not apply;
+> the print header shows the email only when a demo session is active. All
+> other sections (tokens, subject/schedule/dashboard pages, timetable, print,
+> accessibility, microcopy) remain in force.
+
 **Version:** 1.0 · 17 Nov 2026 · Prepared by UX/UI Designer (for Implementer handoff)
 **Sources:** project guide §1, §5, §8, §9 + stack constraints (React 19 + Vite, Tailwind v4 via `@tailwindcss/vite`, lucide-react, RHF+zod, JS only). All contrast ratios below were **computed** from Tailwind v4's official OKLCH palette; layout has **not** been rendered/visually verified.
 **Lead decisions on open questions (§13):** (1) Monday-first display approved; (2) register = email + password + confirm only, approved; (3) A4 landscape approved; (4) SQL default `#6366f1` stays, app maps legacy values to Indigo, approved.

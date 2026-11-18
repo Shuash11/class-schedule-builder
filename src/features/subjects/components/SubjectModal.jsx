@@ -9,7 +9,6 @@ import Modal from '../../../components/ui/Modal.jsx'
 import { useToast } from '../../../components/ui/toastContext.js'
 import { DEFAULT_SUBJECT_COLOR, getSubjectColor, SUBJECT_COLOR_VALUES } from '../colors.js'
 import { createSubject, isUniqueViolation, updateSubject } from '../services/subjects.js'
-import { clearLocalSession, isSessionInvalidError } from '../../auth/services/auth.js'
 import ColorPicker from './ColorPicker.jsx'
 
 const subjectSchema = z.object({
@@ -98,9 +97,6 @@ export default function SubjectModal({ open, subject, onClose, onSaved }) {
           type: 'manual',
           message: 'You already have a subject with this code.',
         })
-      } else if (isSessionInvalidError(error)) {
-        // Session no longer valid (design-spec §4): drop it and redirect.
-        await clearLocalSession()
       } else {
         setSaveError(SAVE_ERROR_MESSAGE)
       }

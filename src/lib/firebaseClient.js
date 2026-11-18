@@ -1,5 +1,4 @@
 import { initializeApp } from 'firebase/app'
-import { getAuth } from 'firebase/auth'
 import { getFirestore } from 'firebase/firestore'
 
 const apiKey = import.meta.env.VITE_FIREBASE_API_KEY
@@ -24,5 +23,6 @@ export const firebaseApp = isFirebaseConfigured
   ? initializeApp({ apiKey, authDomain, projectId, storageBucket, messagingSenderId, appId })
   : null
 
-export const auth = firebaseApp ? getAuth(firebaseApp) : null
+// Demo mode: the sign-in UI uses a browser-local demo session (no Firebase
+// Auth), and the Firestore rules are intentionally open.
 export const db = firebaseApp ? getFirestore(firebaseApp) : null

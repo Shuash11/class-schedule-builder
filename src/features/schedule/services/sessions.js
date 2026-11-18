@@ -12,7 +12,7 @@ import {
 } from 'firebase/firestore'
 import { db } from '../../../lib/firebaseClient.js'
 import { assertOnline, getOwnedDoc } from '../../../lib/firestoreOwnership.js'
-import { getUserId } from '../../auth/services/auth.js'
+import { getDemoUserId } from '../../../lib/demoUser.js'
 
 const SESSIONS_COLLECTION = 'class_sessions'
 
@@ -32,7 +32,7 @@ function toSession(id, data) {
 }
 
 export async function fetchSessions() {
-  const userId = await getUserId()
+  const userId = await getDemoUserId()
   const snapshot = await getDocs(
     query(
       collection(db, SESSIONS_COLLECTION),
@@ -46,7 +46,7 @@ export async function fetchSessions() {
 
 export async function createSession(values) {
   assertOnline()
-  const userId = await getUserId()
+  const userId = await getDemoUserId()
 
   // Security rules verify the referenced subject belongs to this user;
   // user_id is still set explicitly from the current session on every write
@@ -69,7 +69,7 @@ export async function createSession(values) {
 
 export async function updateSession(id, values) {
   assertOnline()
-  const userId = await getUserId()
+  const userId = await getDemoUserId()
   const snapshot = await getOwnedDoc(SESSIONS_COLLECTION, id, userId)
 
   const data = snapshot.data()
@@ -93,7 +93,7 @@ export async function updateSession(id, values) {
 
 export async function deleteSession(id) {
   assertOnline()
-  const userId = await getUserId()
+  const userId = await getDemoUserId()
   const snapshot = await getOwnedDoc(SESSIONS_COLLECTION, id, userId)
   await deleteDoc(snapshot.ref)
 }

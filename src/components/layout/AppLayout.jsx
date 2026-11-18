@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { NavLink, Outlet } from 'react-router-dom'
-import { BookOpen, CalendarDays, LayoutDashboard, LogOut } from 'lucide-react'
+import { Link, NavLink, Outlet } from 'react-router-dom'
+import { BookOpen, CalendarDays, LayoutDashboard, LogOut, LogIn } from 'lucide-react'
 import Alert from '../ui/Alert.jsx'
 import Button from '../ui/Button.jsx'
 import Logo from '../ui/Logo.jsx'
@@ -20,7 +20,11 @@ const NAV_INACTIVE_CLASSES = 'text-slate-600 hover:bg-slate-100 hover:text-slate
 const TAB_ITEM_CLASSES =
   'mx-2 my-1.5 flex flex-col items-center gap-1 rounded-lg py-2 text-xs font-medium transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600'
 
-/** Authenticated app shell (design-spec §4): sticky top nav ≥md, tab bar <md. */
+/**
+ * App shell (design-spec §4): sticky top nav ≥md, tab bar <md.
+ * Demo mode: sign-in is OPTIONAL — all pages are reachable without it; the
+ * header offers Sign in / Sign out when the auth provider is configured.
+ */
 export default function AppLayout() {
   const { user, signOut } = useAuth()
   const [signingOut, setSigningOut] = useState(false)
@@ -32,8 +36,6 @@ export default function AppLayout() {
     try {
       await signOut()
     } catch {
-      // The local session may still have been cleared (which redirects);
-      // this alert only shows when sign-out genuinely failed.
       setSignOutError(true)
     } finally {
       setSigningOut(false)
@@ -66,18 +68,30 @@ export default function AppLayout() {
               ))}
             </nav>
             <div className="flex items-center gap-2">
-              <span className="hidden max-w-48 truncate text-xs text-slate-500 lg:block">
-                {user?.email}
-              </span>
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label="Sign out"
-                onClick={handleSignOut}
-                disabled={signingOut}
-              >
-                <LogOut className="h-4 w-4" aria-hidden="true" />
-              </Button>
+              {user ? (
+                <>
+                  <span className="hidden max-w-48 truncate text-xs text-slate-500 lg:block">
+                    {user.email}
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    aria-label="Sign out"
+                    onClick={handleSignOut}
+                    disabled={signingOut}
+                  >
+                    <LogOut className="h-4 w-4" aria-hidden="true" />
+                  </Button>
+                </>
+              ) : (
+                <Link
+                  to="/login"
+                  className="inline-flex h-8 items-center gap-2 rounded-lg bg-white px-3 text-xs font-medium text-slate-700 hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                >
+                  <LogIn className="h-4 w-4" aria-hidden="true" />
+                  <span className="hidden sm:inline">Sign in</span>
+                </Link>
+              )}
             </div>
           </div>
         </div>

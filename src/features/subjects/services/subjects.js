@@ -13,7 +13,7 @@ import {
 } from 'firebase/firestore'
 import { db } from '../../../lib/firebaseClient.js'
 import { assertOnline, getOwnedDoc } from '../../../lib/firestoreOwnership.js'
-import { getUserId } from '../../auth/services/auth.js'
+import { getDemoUserId } from '../../../lib/demoUser.js'
 
 const SUBJECTS_COLLECTION = 'subjects'
 const SESSIONS_COLLECTION = 'class_sessions'
@@ -35,7 +35,7 @@ function toSubject(id, data) {
 }
 
 export async function fetchSubjects() {
-  const userId = await getUserId()
+  const userId = await getDemoUserId()
   const snapshot = await getDocs(
     query(
       collection(db, SUBJECTS_COLLECTION),
@@ -48,7 +48,7 @@ export async function fetchSubjects() {
 
 export async function createSubject(values) {
   assertOnline()
-  const userId = await getUserId()
+  const userId = await getDemoUserId()
 
   // Firestore has no unique constraint on (user_id, subject_code): pre-write
   // duplicate check. isUniqueViolation keeps SubjectModal's field error
@@ -86,10 +86,10 @@ export async function createSubject(values) {
 
 export async function updateSubject(id, values) {
   assertOnline()
-  const userId = await getUserId()
+  const userId = await getDemoUserId()
   const snapshot = await getOwnedDoc(SUBJECTS_COLLECTION, id, userId)
 
-  // The old unique (user_id, subject_code) constraint covered EDITS too —
+  // The old unique (user_id, subject_code) constraint covered EDITS too â€”
   // reject a code already used by a DIFFERENT subject (review finding M1).
   const duplicates = await getDocs(
     query(
@@ -126,7 +126,7 @@ export async function updateSubject(id, values) {
 
 export async function deleteSubject(id) {
   assertOnline()
-  const userId = await getUserId()
+  const userId = await getDemoUserId()
   const snapshot = await getOwnedDoc(SUBJECTS_COLLECTION, id, userId)
 
   // No server-side cascade in Firestore: delete the subject AND all of its

@@ -8,7 +8,6 @@ import Skeleton from '../../../components/ui/Skeleton.jsx'
 import { useToast } from '../../../components/ui/toastContext.js'
 import { useUserData } from '../../../hooks/useUserData.js'
 import { deleteSubject } from '../services/subjects.js'
-import { clearLocalSession, isSessionInvalidError } from '../../auth/services/auth.js'
 import SubjectCard from '../components/SubjectCard.jsx'
 import SubjectModal from '../components/SubjectModal.jsx'
 
@@ -41,12 +40,7 @@ export default function SubjectsPage() {
       toast.showToast('Subject deleted')
       setDeleteTarget(null)
       reload()
-    } catch (error) {
-      if (isSessionInvalidError(error)) {
-        // Session no longer valid (design-spec §4): drop it and redirect.
-        await clearLocalSession()
-        return
-      }
+    } catch {
       setDeleteError("Couldn't delete. Check your connection and try again.")
     } finally {
       setDeleting(false)

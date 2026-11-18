@@ -22,6 +22,7 @@ export default function App() {
   return (
     <HashRouter>
       <ToastProvider>
+        {/* Optional auth: pages stay reachable without signing in (open demo rules). */}
         <AuthProvider>
           <AppRoutes />
         </AuthProvider>

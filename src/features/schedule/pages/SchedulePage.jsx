@@ -46,7 +46,7 @@ function ScheduleSkeletons() {
 /** /schedule — weekly timetable with session CRUD and conflict detection (design-spec §7). */
 export default function SchedulePage() {
   const { subjects, sessions, loading, error, reload } = useUserData()
-  const { user } = useAuth()
+  const { user } = useAuth() // optional sign-in — only used in the print header
   const [modalState, setModalState] = useState(null) // { mode: 'create', day } | { mode: 'edit', session }
 
   // Mount-time snapshots (stable per page visit) — avoids impure calls during render.

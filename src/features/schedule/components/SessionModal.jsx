@@ -20,7 +20,6 @@ import {
   timeToMinutes,
 } from '../utils/schedule.js'
 import { createSession, deleteSession, updateSession } from '../services/sessions.js'
-import { clearLocalSession, isSessionInvalidError } from '../../auth/services/auth.js'
 
 // Strict zero-padded 24-hour "HH:mm" — exactly what <input type="time">
 // submits (guide §8 requires format validation before storage/comparison).
@@ -168,12 +167,7 @@ export default function SessionModal({
       }
       onSaved()
       handleClose()
-    } catch (error) {
-      if (isSessionInvalidError(error)) {
-        // Session no longer valid (design-spec §4): drop it and redirect.
-        await clearLocalSession()
-        return
-      }
+    } catch {
       setSaveError(SAVE_ERROR_MESSAGE)
     }
   }
@@ -188,12 +182,7 @@ export default function SessionModal({
       setConfirmOpen(false)
       onSaved()
       handleClose()
-    } catch (error) {
-      if (isSessionInvalidError(error)) {
-        // Session no longer valid (design-spec §4): drop it and redirect.
-        await clearLocalSession()
-        return
-      }
+    } catch {
       setDeleteError(DELETE_ERROR_MESSAGE)
     } finally {
       setDeleting(false)
