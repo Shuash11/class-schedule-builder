@@ -2,11 +2,11 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     // ====================================================================
-    // DEMO MODE — NON-PRODUCTION. There is NO sign-in in this app.
-    // These rules intentionally allow ANY client with the project's public
-    // web config to read, create, update and delete schedule data.
-    // DO NOT deploy these rules to a production project or store private
-    // data here. Field checks below protect data shape, not confidentiality.
+    // DEMO MODE — NON-PRODUCTION. Login is backed by Firestore documents
+    // (users + sessions), NOT Firebase Auth. These rules intentionally allow
+    // ANY client with the project's public web config to read, create, update
+    // and delete ALL data — including password hashes. Field checks below
+    // protect data shape, not confidentiality. DO NOT use for private data.
     // ====================================================================
 
     function validTime(t) {
@@ -39,6 +39,29 @@ service cloud.firestore {
     match /class_sessions/{sessionId} {
       allow read, delete: if true;
       allow create, update: if validSessionData(request.resource.data);
+    }
+
+    // Firestore-backed demo login (no Firebase Auth). Password hashes and
+    // session records are readable by anyone with the public config — demo
+    // only, never store real credentials here.
+    function validUserData(d) {
+      return d.email is string
+        && d.salt is string && d.salt.size() >= 16
+        && d.password_hash is string && d.password_hash.size() >= 32;
+    }
+
+    function validLoginSessionData(d) {
+      return d.user_id is string && d.user_id.size() >= 1;
+    }
+
+    match /users/{userId} {
+      allow read, delete: if true;
+      allow create, update: if validUserData(request.resource.data);
+    }
+
+    match /sessions/{token} {
+      allow read, delete: if true;
+      allow create, update: if validLoginSessionData(request.resource.data);
     }
   }
 }

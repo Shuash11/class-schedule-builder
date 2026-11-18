@@ -18,7 +18,8 @@ export default function AuthShell({ subtitle, children, footer }) {
         <p className="mt-1 text-center text-sm text-slate-600">{subtitle}</p>
         <div className="mt-4">
           <Alert variant="warning">
-            Demo only — no real account or password check. Schedule data is public.
+            Demo only — accounts and sessions are stored in Firestore (visible
+            in the Firebase console), but this is not production-grade security.
           </Alert>
         </div>
         <div className="mt-6">{children}</div>

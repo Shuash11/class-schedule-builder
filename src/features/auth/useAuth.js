@@ -1,8 +1,8 @@
 import { createContext, useContext } from 'react'
 
 /**
- * Auth context (demo mode): wraps the browser-local demo session provided
- * by AuthProvider / demoSession.js. No Firebase Auth or server persistence.
+ * Auth context (demo mode): wraps the Firestore-backed session provided by
+ * AuthProvider / services/auth.js. No Firebase Auth is used.
  *
  * status: 'authenticated' | 'unauthenticated'
  */

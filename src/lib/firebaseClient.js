@@ -23,6 +23,6 @@ export const firebaseApp = isFirebaseConfigured
   ? initializeApp({ apiKey, authDomain, projectId, storageBucket, messagingSenderId, appId })
   : null
 
-// Demo mode: the sign-in UI uses a browser-local demo session (no Firebase
-// Auth), and the Firestore rules are intentionally open.
+// Demo mode: login is backed by Firestore users/sessions documents (no
+// Firebase Auth); the browser holds only a session token. Rules are open.
 export const db = firebaseApp ? getFirestore(firebaseApp) : null

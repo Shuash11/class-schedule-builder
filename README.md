@@ -5,13 +5,13 @@ weekly class schedules while preventing time conflicts.
 
 Built with **React + Vite + Tailwind CSS**, backed by **Firebase Cloud
 Firestore**. This is a **non-production demo**: the Firestore rules are
-intentionally open, so the schedule works without signing in. The
-login/register screens perform a **browser-local demo sign-in** (no server
-account, no Firebase Auth) — see the security warning below.
+intentionally open. Login/register use **Firestore documents** (`users` and
+`sessions`) instead of Firebase Auth — accounts and sessions are visible in
+the Firebase console. Only a random session token is kept in the browser.
 
 ## Features
 
-- Demo email/password sign-in (stored in this browser only; not real security)
+- Firestore-backed demo sign-in (email + salted SHA-256 hash; no Firebase Auth)
 - Manage subjects (code, name, instructor, room, display color)
 - Assign weekly class sessions to subjects
 - Weekly timetable view (desktop grid and mobile-friendly list)
@@ -50,13 +50,13 @@ Then prepare the Firebase project (no Authentication setup is needed):
 
 1. **Firestore Database:** create the database.
 
-> **About sign-in:** the login/register forms validate input and then store a
-> demo email in `localStorage`; no account is created and no password is
-> checked. This keeps the full UI journey usable without any Firebase console
-> Auth configuration. To make it a real authentication system later, enable
-> Email/Password in the Firebase console and replace the local demo service
-> (`src/features/auth/services/auth.js` + `src/lib/demoSession.js`) with
-> `firebase/auth` calls and restore owner-scoped Firestore rules.
+> **About sign-in:** Firebase Authentication is NOT used. Register creates a
+> `users/{id}` document with the email, a random salt and a SHA-256 password
+> hash; login checks that document and creates a `sessions/{token}` document.
+> Only the token is stored in the browser (`localStorage`). You can inspect
+> both collections in the Firebase console. This is demo-grade: SHA-256 is not
+> a production password KDF, and the open rules let anyone read the hashes.
+> For production, use Firebase Auth (or a real backend) with owner-scoped rules.
 2. Deploy the demo rules and indexes from this repository:
 
    ```bash
@@ -77,8 +77,9 @@ Then prepare the Firebase project (no Authentication setup is needed):
 
 ### Documented limitations
 
-- **Demo data is shared.** There are no accounts; every browser hitting this
-  site reads and writes the same Firestore collections.
+- **Demo data and accounts are shared.** Anyone with the public config can
+  read/write all collections (including user hashes); the login only labels
+  the UI session, it is not a security boundary.
 - **Subject codes are best-effort unique, not transactionally unique.** The
   app checks for an existing code before create/edit, but Firestore has no
   unique constraint; two simultaneous writes could both succeed.

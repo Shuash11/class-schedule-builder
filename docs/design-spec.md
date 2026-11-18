@@ -3,10 +3,10 @@
 > **Demo-mode amendment (18 Nov 2026, owner decision):** sign-in/register are
 > **optional** in this non-production app — the pages exist, the header offers
 > Sign in / Sign out, but no route is protected and the Firestore rules are
-> intentionally open (data works without signing in). Sign-in is a **local
-> demo session** in `localStorage` — no Firebase Auth, no account, no password
-> check, no console Auth setup. §4's *mandatory* auth redirects do not apply;
-> the print header shows the email only when a demo session is active. All
+> intentionally open (data works without signing in). Sign-in uses **Firestore
+> `users`/`sessions` documents** (email + salted hash; token only in browser),
+> NOT Firebase Auth. §4's *mandatory* auth redirects do not apply; the print
+> header shows the email only when signed in. All
 > other sections (tokens, subject/schedule/dashboard pages, timetable, print,
 > accessibility, microcopy) remain in force.
 
@@ -16,9 +16,9 @@
 
 ## 1. Product context & design direction
 
-- **Users (demo mode):** one role — a student managing a recurring weekly class timetable. Sign-in is optional and local-only; entry is `/dashboard`, with `/login` → `/dashboard` available for the demo journey. High-frequency tasks: add/edit sessions, scan the week, print.
+- **Users (demo mode):** one role — a student managing a recurring weekly class timetable. Sign-in is optional and Firestore-backed; entry is `/dashboard`, with `/login` → `/dashboard` available for the demo journey. High-frequency tasks: add/edit sessions, scan the week, print.
 - **Direction (decision):** calm, functional productivity tool. Light theme only (no dark mode in v1). Near-white cool-neutral `slate` chrome, white surfaces, **indigo primary** — deliberately derived from the existing DB default `#6366F1` (indigo family), so the brand hue and the default subject color agree. No gradients, no glassmorphism, minimal shadows (borders carry structure). Color in the UI is information (subject identity, status), not decoration.
-- **IA (demo mode):** `/login`, `/register` (optional local demo sign-in); `/dashboard`, `/subjects`, `/schedule` (always open — no auth guard); `/` redirects to `/dashboard`. Top nav on ≥`md`, bottom tab bar below `md`.
+- **IA (demo mode):** `/login`, `/register` (optional Firestore-backed sign-in); `/dashboard`, `/subjects`, `/schedule` (always open — no auth guard); `/` redirects to `/dashboard`. Top nav on ≥`md`, bottom tab bar below `md`.
 
 ## 2. Design tokens
 
